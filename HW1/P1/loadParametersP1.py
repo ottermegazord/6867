@@ -1,12 +1,15 @@
 import pylab as pl
 import numpy as np
 from math import *
+import pandas as pd
 import matplotlib as plt
 
 
 """Data Set Analytical Tools"""
 
 # Creates gauss and gaussGrad (gradient) given gaussMean and gaussCov
+
+"""Part 1"""
 
 def createGaussAndGradient(gaussMean, gaussCov):
     gaussMean = np.mat(gaussMean[:, np.newaxis]) #
@@ -69,9 +72,46 @@ def basicGradientDescent(gradient_function, start_pos, rate, isConverged, output
         output.append((pos, iti))
         if iti % 10 == 0:
             pass
-            print(pos,iti)
     return pos
 
+"""Part 2"""
+
+#Central Difference Approximation of a gradient, returns a vector of length of the input vector x
+def centdiff(objectiveFun, stepSize):
+    def grad(x):
+        rows = x.shape[0]
+        print(x.shape)
+        assert x.size == rows
+        diffs = []
+        for i in range(rows):
+            step = np.zeros_like(x)
+            step[i] = stepSize
+            diffs.append((objectiveFun(x + step) - objectiveFun(x - step)) / (2 * stepSize))
+        return np.mat(diffs).T
+    return grad
+
+
+# def centdiff(x, f, h=0.00001):
+#     '''Evaluates the gradient of f at x using central differences'''
+#     out = np.zeros(len(x))
+#     if x.dtype != float:
+#         x = x.astype(float)
+#
+#     assert not np.isnan(x).any()
+#     assert h > 0
+#     hfix = 2. * h
+#     for i in range(0, len(x)):
+#         hplus = np.copy(x)
+#         hminus = np.copy(x)
+#         hplus[i] = hplus[i] + h
+#         hminus[i] = hminus[i] - h
+#         out[i] = (f(hplus) - f(hminus)) / hfix
+#         assert not np.isnan(out[i]), 'out:{}, x:{}'.format(out, x)
+#     return out
+#
+# def gaussianError(gauss, gaussGrad, start, h=0.00001):
+#     weights = np.array([start, start])
+#     return np.abs((centdiff(weights, gauss, h=h) - gaussGrad(weights))[0])
 
 
 # Iterative algorithm: in iteration t + 1
@@ -101,6 +141,8 @@ def getData():
 
 if __name__ == '__main__':
 
+    f = open("error.txt", "w")
+
     """Load Parameters"""
     gaussMean, gaussCov, quadBowlA, quadBowlb = getData()
     print gaussMean, gaussCov, quadBowlA, quadBowlb
@@ -117,18 +159,37 @@ if __name__ == '__main__':
 
     """Output of Gradient Descent"""
     output = [] #local minimum stores here
-    start_matrix = np.mat([[7.], [5.]])
+    start_matrix = np.mat([[10.], [10.]])
 
 
     """Problem 1 Part 1"""
     gauss, gaussGrad = createGaussAndGradient(gaussMean, gaussCov)
-    convergedO = convergenceObjectiveFunction(gauss, 1e-20, stepsA)
-    #convergedO = convergenceGradFunction(gaussGrad, 1e-13, stepsA)
-    #print(basicGradientDescent(gaussGrad, start_matrix, 0.001, convergedO, data))
+    convergedO = convergenceObjectiveFunction(gauss, 1e-20, 1000)
+    convergedO = convergenceGradFunction(gaussGrad, 1e-13, 1000)
+    #print(basicGradientDescent(gaussGrad, start_matrix, 1e8, convergedO, data, f))
 
     bowl, bowlGrad = createBowlAndGrad(quadBowlA, quadBowlb)
     converged0 = convergenceObjectiveFunction(bowl, 1e-20, 2000)
-    #print(basicGradientDescent(bowlGrad, start_matrix, 0.001, converged0, data))
+    basicGradientDescent(bowlGrad, start_matrix, 0.001, converged0, data)
+
+    f.write((data[200]))
+
+    bowl_exact = (26.666, 26.666)
+
+    """Problem 2 Part 2"""
+
+    # gauss = bowl
+    # gaussGrad = bowlGrad
+    # for i in range(10):
+    #     step = 10**-i
+    #     approxGaussGrad = centdiff(gauss, step)
+    #     point = (26.666, 26.666)
+    #     point = np.mat(point).T
+    #     print(step, np.linalg.norm(gaussGrad(point) - approxGaussGrad(point)))
+    # #print(approxGaussGrad(start))
+    # # header = "figs/qb"
+    # # gauss = bowl
+    # # gaussGrad = bowlGrad
 
 
 
