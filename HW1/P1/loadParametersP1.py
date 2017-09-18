@@ -7,6 +7,7 @@ import matplotlib as plt
 """Data Set Analytical Tools"""
 
 # Creates gauss and gaussGrad (gradient) given gaussMean and gaussCov
+
 def createGaussAndGradient(gaussMean, gaussCov):
     gaussMean = np.mat(gaussMean[:, np.newaxis]) #
     gaussCov_Inv = np.linalg.inv(gaussCov) # Inverses gaussCov
@@ -21,6 +22,18 @@ def createGaussAndGradient(gaussMean, gaussCov):
         return - gauss(x)*gaussCov_Inv*( x - gaussMean)
     return gauss, gaussGrad
 
+# Creates bowl and bowlGrad (gradient) given quadBowl and quadBowlb
+
+def createBowlAndGrad(quadBowlA, quadBowlb):
+    A = np.mat(quadBowlA)
+    b = np.mat(quadBowlb).T
+    def bowl(x):
+        return float((1/2) * x.T * A * x - x.T * b)
+    def bowlGrad(x):
+        out = A * x - b
+        return out
+    return bowl, bowlGrad
+
 # Recursive function that terminates when the difference in objective function value on two successive steps is below
 # convergence threshold assigned
 def convergenceObjectiveFunction(objective_function, convergence_threshold, max_iti):
@@ -32,15 +45,22 @@ def convergenceObjectiveFunction(objective_function, convergence_threshold, max_
         return diff < convergence_threshold
     return isConverged
 
+# Recursive function that terminates when the difference in objective function value on two successive steps is below
+# convergence threshold assigned
+def convergenceGradFunction(gradient_fun, threshold, max_iterations):
+    def isConverged(position, _, iterations):
+        if iterations > max_iterations: return True
+        return np.linalg.norm(gradient_fun(position)) < threshold
+    return isConverged
 
-# # Outputs position of local mininum
+
 def basicGradientDescent(gradient_function, start_pos, rate, isConverged, output):
     if isinstance(rate, float):
         frate = lambda x: rate
     else:
         frate = rate
-    old_pos = None
     pos = start_pos
+    old_pos = None
     iti = 0
     while old_pos is None or not isConverged(pos, old_pos, iti):
         old_pos = pos # updates new position
@@ -49,16 +69,9 @@ def basicGradientDescent(gradient_function, start_pos, rate, isConverged, output
         output.append((pos, iti))
         if iti % 10 == 0:
             pass
+            print(pos,iti)
     return pos
 
-
-# # Recursive function that terminates when the difference in norm on two successive steps is below
-# # convergence threshold assigned
-# def covergenceGradientFunction(gradient_function, convergence_threshold, max_iti):
-#     def isConverged(pos, old_pos, iti):
-#         if iti > max_iti: return True # has already converged
-#         return np.linalg.norm(gradient_function(pos)) < convergence_threshold
-#     return isConverged
 
 
 # Iterative algorithm: in iteration t + 1
@@ -75,13 +88,13 @@ def getData():
 
     data = pl.loadtxt('parametersp1.txt')
 
-    gaussMean = data[0,:]
-    gaussCov = data[1:3,:]
+    gaussMean = data[0, :]
+    gaussCov = data[1:3, :]
 
-    quadBowlA = data[3:5,:]
-    quadBowlb = data[5,:]
+    quadBowlA = data[3:5, :]
+    quadBowlb = data[5, :]
 
-    return (gaussMean,gaussCov,quadBowlA,quadBowlb)
+    return gaussMean,gaussCov,quadBowlA,quadBowlb
 
 
 """Routine starts here"""
@@ -93,23 +106,29 @@ if __name__ == '__main__':
     print gaussMean, gaussCov, quadBowlA, quadBowlb
 
     """Define variables"""
+    data = []
     # Negative gaussian function threshold
-    convCriterionA = 1e-20
+    convCriterionA = 2
     stepsA = 1000
 
     convCriterionB = 1e-20
-    stepsB = 1000
+    stepsB = 2000
+    #data = []
 
     """Output of Gradient Descent"""
     output = [] #local minimum stores here
-    start_matrix = np.mat([[0.], [0.]])
+    start_matrix = np.mat([[7.], [5.]])
 
+
+    """Problem 1 Part 1"""
     gauss, gaussGrad = createGaussAndGradient(gaussMean, gaussCov)
-    convergedO = convergenceObjectiveFunction(gauss, convCriterionA, stepsA)
-    print(convergedO)
-    print(basicGradientDescent(gaussGrad, start_matrix, 1e8, convergedO, output))
+    convergedO = convergenceObjectiveFunction(gauss, 1e-20, stepsA)
+    #convergedO = convergenceGradFunction(gaussGrad, 1e-13, stepsA)
+    #print(basicGradientDescent(gaussGrad, start_matrix, 0.001, convergedO, data))
 
-
+    bowl, bowlGrad = createBowlAndGrad(quadBowlA, quadBowlb)
+    converged0 = convergenceObjectiveFunction(bowl, 1e-20, 2000)
+    #print(basicGradientDescent(bowlGrad, start_matrix, 0.001, converged0, data))
 
 
 
