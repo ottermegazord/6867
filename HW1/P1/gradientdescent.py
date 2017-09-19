@@ -20,10 +20,10 @@ def gradientDescent(f, f_p, guess, step, conv):
         y_new = f(x_new)
         i += 1
         diff = y_old - y_new
-        # print "iteration", i
-        # print "x_i", x_new
-        # print "y_i", y_new
-        # print "diff", diff," conv", conv
+        print "iteration", i
+        print "x_i", x_new
+        print "y_i", y_new
+        print "diff", diff," conv", conv
 
     return x_new, y_new, i
 
@@ -32,7 +32,6 @@ def gradientDescentFD(f, h, guess, conv):
     # f: function that we are given
     # f_p: (f' prime) optional function parameter test this function for f being the quadratic bowl and the negative Gaussian function
     # guess: initial guess
-    # step: step size
     # conv: convergence criterion
 
     x_new = guess
@@ -98,6 +97,7 @@ def negGaussianGrad(x):
 
 
 if __name__ == "__main__":
+    f = open("bowl_gd.txt", "w")
     print "running gradientDescent.py"
 
     global quadBowlA
@@ -121,19 +121,32 @@ if __name__ == "__main__":
     print "Quadratic Bowl A", quadBowlA
     print "Quadratic Bowl B", quadBowlb
 
+    gauss = negGaussian(mu)
+    gaussGrad = negGaussianGrad(cov)
+
+    #x, y, i = gradientDescent(gauss, gaussGrad, guess, 100, 1000)
+
     x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.1, 0.0001)
-    print i
-    x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.01, 0.0001)
-    print i
-    x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.001, 0.0001)
-    print i
-    x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.0001, 0.0001)
-    print x, y, i
+    print x, y
+    # x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.01, 0.0001)
+    # print x, y, i
+    # x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.001, 0.0001)
+    # print x, y, i
+    # x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.0001, 0.0001)
+    # x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.00001, 0.0001)
+    # print x, y, i
 
     # x,y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, step, conv)
 
     # print "\n\n"
 
-    # x2,y2 = gradientDescentFD(quadraticBowl, step, guess, conv)
-    # x,y = gradientDescent(negGaussian, negGaussianGrad, guess, step, conv)
-    # print x2,y2
+    # # x2,y2 = gradientDescentFD(quadraticBowl, step, guess, conv)
+    # x, y, i = gradientDescent(negGaussian, negGaussianGrad, guess, 10e1, 0.0001)
+    # print x, y, i
+    # x, y, i = gradientDescent(negGaussian, negGaussianGrad, guess, 10e2, 0.0001)
+    # print x, y, i
+    # x, y, i = gradientDescent(negGaussian, negGaussianGrad, guess, 10e3, 0.0001)
+    # print x, y, i
+    # x, y, i = gradientDescent(negGaussian, negGaussianGrad, guess, 10e4, 0.0001)
+    # print x, y, i
+    # # print x2,y2
