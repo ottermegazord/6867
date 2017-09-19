@@ -1,152 +1,183 @@
-import loadFittingDataP1, loadParametersP1
-import math
 import numpy as np
+import loadParametersP1 as load_params
 
-def gradientDescent(f, f_p, guess, step, conv):
-    # f: function that we are given
-    # f_p: (f' prime) optional function parameter test this function for f being the quadratic bowl and the negative Gaussian function
-    # guess: initial guess
-    # step: step size
-    # conv: convergence criterion
-
-    x_new = guess
-    y_new = f(x_new)
-    y_old = y_new + 2 * conv
-    i = 0  # iterator counts
-    while abs(y_old - y_new) >= conv:  # while we have not converged
-        x_old = x_new
-        y_old = y_new
-        x_new = x_old - step * f_p(x_old)
-        y_new = f(x_new)
-        i += 1
-        diff = y_old - y_new
-        print "iteration", i
-        print "x_i", x_new
-        print "y_i", y_new
-        print "diff", diff," conv", conv
-
-    return x_new, y_new, i
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
-def gradientDescentFD(f, h, guess, conv):
-    # f: function that we are given
-    # f_p: (f' prime) optional function parameter test this function for f being the quadratic bowl and the negative Gaussian function
-    # guess: initial guess
-    # conv: convergence criterion
+def gradient_descent(f, f_params, \
+                     learning_rate, convergence_limit, initial_guess, max_iters):
+    #
+    # Approximate the minimum of a function minimum via gradient descent,
+    # after reaching max_iters or significantly small difference
+    # between iterations.
+    #
+    # Return x (np array of x values throughout descent)
+    #         and fx (np array of f(x) values throughout descent)
 
-    x_new = guess
-    y_new = f(x_new)
-    y_old = y_new + 2 * conv
-    i = 0  # iterator counts
-    while abs(y_old - y_new) >= conv:  # while we have not converged
-        x_old = x_new
-        y_old = y_new
-        x_new = x_old - finiteDifference(f, h, x_old)
-        y_new = f(x_new)
-        i += 1
-        diff = y_old - y_new
-        print "iteration", i
-        print "x_i", x_new
-        print "y_i", y_new
-        print "diff", diff, " conv", conv
+    diff = np.inf
+    num_iters = 0
+    x = np.array([initial_guess])
+    initial_fx, initial_dx = f(f_params, initial_guess)
+    fx = np.array([initial_fx])
+    dx = np.array([initial_dx])
+    while diff > convergence_limit and num_iters < max_iters:
+        next_x = x[-1] - learning_rate * dx[-1]
 
-    return x_new, y_new
+        next_fx, next_dx = f(f_params, next_x)
+        x = np.vstack([x, next_x])
+        fx = np.vstack([fx, next_fx])
+        dx = np.vstack([dx, next_dx])
+        diff = np.linalg.norm(fx[-1] - fx[-2])
+        # print "diff:", diff
+        num_iters += 1
 
-
-"""Problem 2"""
-
-def finiteDifference(f, h, x):
-    # problem 2 of gradient descent
-    # f is the function
-    # h is our step size, which is a scalar
-    # x is where we are evaluation
-
-    # print "\n Print \n"
-    # print x
-    # print h
-    fD = np.zeros(x.shape)
-    for i in xrange(x.shape[0]):
-        temp = np.zeros(x.shape)
-        temp[i] = h
-        temp2 = f(x + 0.5 * temp) - f(x - 0.5 * temp)
-        fD[i] = temp2
-        # print "ITER", i
-        # print temp
-        # print temp2
-    return fD
-    # return f(x + 0.5*h) - f(x - 0.5*h)
+    return x, fx, dx, num_iters
 
 
-def quadraticBowl(x):
-    # A and b are global variables <- should change
-    return float(0.5 * np.transpose(x) * quadBowlA * x - np.transpose(x) * quadBowlb)
+def negative_gaussian(params, x):
+    #
+    # Compute value of negative gaussian function f and its derivative d
+    # Return f, d
+    #
+    # params should be a np array containing:
+    # [mean, cov_matrix, multiplier]
+    #
+    # f(x) = (2x1)'*(2x2)*(2x1)
+    #      = (1x2)*(2x2)*(2x1)
+    #      = 1
+    # df(x)/dx = 1*(2x2)*(2x1)
+    #          = 2x1
+    #
+
+    mean = params[0]
+    cov_matrix = params[1]
+    multiplier = params[2]
+
+    f = -(multiplier / np.sqrt(((2 * np.pi) ** 2) * np.linalg.norm(cov_matrix))) \
+        * np.exp(-0.5 * np.dot(np.dot(np.transpose(x - mean), np.linalg.inv(cov_matrix)), (x - mean)))
+    d = -np.dot(np.dot(f, np.linalg.inv(cov_matrix)), (x - mean))
+
+    return f, d
 
 
-def quadraticBowlGrad(x):
-    return quadBowlA * x - quadBowlb
+def quadratic_bowl(params, x):
+    #
+    # Compute value of quadratic bowl function f and its derivative d
+    # Return f, d
+    #
+    # params should be a np array containing:
+    # [A, b]
+    #
+    # f(x) = (2x1)'*(2x2)*(2x1) - (2x1)'*(2x1)
+    #      = (1x2)*(2x2)*(2x1) - (1x2)*(2x1)
+    #      = 1x1 - 1x1
+    #      = 1x1
+    # df(x)/dx = (2x2)*(2x1) - (2x1)
+    #          = (2x1)
+    #
+
+    A = params[0]
+    b = params[1]
+
+    f = 0.5 * np.dot(np.dot(np.transpose(x), A), x) \
+        - np.dot(np.transpose(x), b)
+    d = np.dot(A, x) - b
+
+    return f, d
 
 
-def negGaussian(x):
-    return -1 / math.sqrt((2 * math.pi) ** 3 * np.linalg.det(cov)) * np.exp(
-        -0.5 * np.transpose(x - mu) * np.linalg.inv(cov) * (x - mu))
+def main():
+    # Load params
+    gaussMean, gaussCov, quadBowlA, quadBowlb = load_params.getData()
+
+    # Negative gaussian
+    print "True mean:", gaussMean
+    f = negative_gaussian
+    multiplier = 1e4
+    f_params = [gaussMean, gaussCov, multiplier]
+    learning_rate = 0.01
+    convergence_limit = 1e-5
+    max_iters = 500
+
+    initial_guess = np.array([8.0, 8.0])
+
+    colors = ['b', 'r', 'g', 'y', 'c', 'p', 'b']
+    marker = []
+
+    # Plot to show effect of initial guess.
+    fig = plt.figure()
+    initial_guesses = [np.array([8.0,18.0]),np.array([12.0,16.0]),np.array([8.0,8.0])]
+    legend = []
+    for i, initial_guess in enumerate(initial_guesses):
+        x, fx, dx, num_iters = gradient_descent(f,f_params,learning_rate,convergence_limit,initial_guess,max_iters)
+        plt.plot(range(num_iters+1), fx, '-o', c=colors[i])
+        legend.append('Initial Guess Error Norm: '+str(round(np.linalg.norm(initial_guess - x[-1]),2)))
+    plt.legend(legend)
+    plt.xlabel("Iteration Number")
+    plt.ylabel("f(x) [Negative Gaussian]")
+    plt.show()
+
+    # Plot to show effect of step size on convergence
+    fig = plt.figure()
+    convergence_limits = [1e-4,1e-3,1e-2,1e-1]
+    legend = []
+    for i, convergence_limit in enumerate(convergence_limits):
+        x, fx, dx, num_iters = gradient_descent(f,f_params,learning_rate,convergence_limit,initial_guess,max_iters)
+        plt.plot(range(num_iters+1), fx, '-o', c=colors[i])
+        legend.append('Convergence Limit: '+str(convergence_limit))
+    plt.legend(legend)
+    plt.xlabel("Iteration Number")
+    plt.ylabel("f(x) [Negative Gaussian]")
+    plt.show()
+
+    fig = plt.figure()
+    convergence_limits = np.logspace(2,-3,20)
+    print convergence_limits
+    legend = []
+    solutions = []
+    for i, convergence_limit in enumerate(convergence_limits):
+        x, fx, dx, num_iters = gradient_descent(f,f_params,learning_rate,convergence_limit,initial_guess,max_iters)
+        solutions.append(fx[-1])
+    plt.semilogx(convergence_limits, solutions,'o')
+    plt.xlabel("Convergence Limit")
+    plt.ylabel("f(x) [Negative Gaussian]")
+    plt.show()
+
+    # Quadratic Bowl
+    f = quadratic_bowl
+    f_params = [quadBowlA, quadBowlb]
+    learning_rate = 0.01
+    convergence_limit = 1e-1
+    initial_guess = np.array([2.0, -2.0])
+    max_iters = 20
+    x, fx, dx, num_iters = gradient_descent(f, f_params, learning_rate, convergence_limit, initial_guess, max_iters)
+
+    print '--------'
+    print "f([10,10]):", f(f_params,np.array([10,10]))
+    print "x:", x
+    print "fx:", fx
+    print "dx:", dx
+    print "minimum: (%s,%s). Took %s steps." %(x[-1], fx[-1], np.shape(x)[0])
+
+    fig = plt.figure()
+    plt.scatter(range(num_iters+1), fx)
+    plt.xlabel("Iteration Number")
+    plt.ylabel("f(x)")
+    plt.show()
 
 
-def negGaussianGrad(x):
-    # return -1*negGaussian(x)*np.linalg.inv(cov)*(x-mu)
-    return np.linalg.inv(cov) * (x - mu) * -1 * negGaussian(x)
+    fig2 = plt.figure()
+    plt.plot(range(num_iters + 1), np.linalg.norm(dx, axis=1), '-o')
+    plt.xlabel("Iteration Number")
+    plt.ylabel("Norm of Gradient [Quadratic Bowl]")
+    plt.show()
 
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+
+    # Z = negative_gaussian(f_params,)
+    # Axes3D.plot_surface(X, Y, Z, *args, **kwargs)
 
 if __name__ == "__main__":
-    f = open("bowl_gd.txt", "w")
-    print "running gradientDescent.py"
-
-    global quadBowlA
-    global quadBowlb
-    global mu
-    global cov
-
-    (mu, cov, quadBowlA, quadBowlb) = loadParametersP1.getData()
-    mu = np.transpose(np.matrix(mu))
-    quadBowlb = np.transpose(np.matrix(quadBowlb))
-    # data =  mean, Gaussian covariance, A and b for quadratic bowl in order
-
-    # Starting point
-    guess = np.transpose(np.matrix([[20, 10]]))  # specify guess here
-    step = 0.05  # specify step here
-    conv = 0.0001  # specify convergence here
-    h = 1
-
-    print "mean", mu
-    print "gauss cov", cov
-    print "Quadratic Bowl A", quadBowlA
-    print "Quadratic Bowl B", quadBowlb
-
-    gauss = negGaussian(mu)
-    gaussGrad = negGaussianGrad(cov)
-
-    #x, y, i = gradientDescent(gauss, gaussGrad, guess, 100, 1000)
-
-    x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.1, 0.0001)
-    print x, y
-    # x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.01, 0.0001)
-    # print x, y, i
-    # x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.001, 0.0001)
-    # print x, y, i
-    # x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.0001, 0.0001)
-    # x, y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.00001, 0.0001)
-    # print x, y, i
-
-    # x,y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, step, conv)
-
-    # print "\n\n"
-
-    # # x2,y2 = gradientDescentFD(quadraticBowl, step, guess, conv)
-    # x, y, i = gradientDescent(negGaussian, negGaussianGrad, guess, 10e1, 0.0001)
-    # print x, y, i
-    # x, y, i = gradientDescent(negGaussian, negGaussianGrad, guess, 10e2, 0.0001)
-    # print x, y, i
-    # x, y, i = gradientDescent(negGaussian, negGaussianGrad, guess, 10e3, 0.0001)
-    # print x, y, i
-    # x, y, i = gradientDescent(negGaussian, negGaussianGrad, guess, 10e4, 0.0001)
-    # print x, y, i
-    # # print x2,y2
+    main()
