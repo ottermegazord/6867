@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep 18 15:37:00 2017
+
+@author: priyankadesouza
+"""
+import pylab as pl
+import numpy as np
+from math import *
+import matplotlib as plt
+
+def getData():
+    x=pl.loadtxt('fittingdatap1_x.txt')
+    y=pl.loadtxt('fittingdatap1_y.txt')
+    return x,y
+
+def objectivefunction(A):
+    def costFunc(x,y,m):
+        hypothesis=np.dot(x, A)
+        loss=hypothesis-y.T
+        J=np.sum(loss*2)/2*m
+        return J
+    def costFuncGrad(x,y,m):
+        hypothesis=np.dot(A, x)
+        loss=hypothesis-y.T
+        gradient=np.dot(x.T, loss)/m
+        return gradient
+    return costFunc, costFuncGrad
+    
+def Batchgradient(m,x,y,start_pos,convCriterion, max_iti):
+    iti=0
+    
+    costFunc_old, costFuncGrad_old=objectivefunction(start_pos)
+#   print(objective_old)
+        
+    while (iti<max_iti):
+        pos=start_pos-costFuncGrad_old(x,y,m)/100
+#       print(pos)
+        costFunc_new, costFuncGrad_new= objectivefunction(pos)
+        
+
+        if abs(costFunc_new(x,y,m)-costFunc_old(x,y,m))< convCriterion:
+            return costFunc_new(x,y,m), pos
+        else:
+            start_pos=pos
+            iti=iti+1
+            costFunc_old=costFunc_new
+                
+    else:
+        return costFunc_old(x,y,m), pos
+        
+
+if __name__ == '__main__':
+    convCriterion=0.00000000000000000001
+    steps=1000
+    x1,y1= getData()
+    x=np.asmatrix(x1)
+    y=np.asmatrix(y1)
+    y=y.T
+    #y=np.mat(y[:, np.newaxis])
+    m=x.shape[0]
+    #alpha=np.ones(100)/100
+    print(m)
+    start_pos=np.ones((100,1))
+    Batchgradient(m,x,y, start_pos, convCriterion, steps )
+    
+    
