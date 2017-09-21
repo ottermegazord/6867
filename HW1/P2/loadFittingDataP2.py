@@ -20,11 +20,11 @@ def getData(ifPlotData=True):
     X = data[0,:]
     Y = data[1,:]
 
-    if ifPlotData:
-        plt.plot(X,Y,'-o')
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.show()
+    # if ifPlotData:
+    #     plt.plot(X,Y,'-o')
+    #     plt.xlabel('x')
+    #     plt.ylabel('y')
+    #     plt.show()
 
     return (X,Y)
 

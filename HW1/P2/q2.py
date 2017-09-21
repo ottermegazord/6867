@@ -5,16 +5,19 @@ import math
 
 
 def poly_phi(X, M): # returns phi Vandermonde
-    X_hold = np.ones((X.shape[0], M + 1)) #  make X.shape[0] (N) x M ones array (M+1 because 0, 1, 2... M)
-    for i in xrange(1, M + 1):
+    X_hold = np.ones((X.shape[0], M)) #  make X.shape[0] (N) x M ones array (M+1 because 0, 1, 2... M)
+    for i in xrange(1, M):
         X_hold[:, [i]] = np.matrix(np.power(X, i))
 
     return X_hold
 
 def poly_theta(X, Y, M): # returns weight vector theta,
-    phi = poly_phi(X, M)
+    phi = poly_phi(X, M + 1)
     weight = np.linalg.inv(np.transpose(phi).dot(phi)).dot(phi.transpose()).dot(Y)  # theta = (X^T X)^-1 X^T y
     return weight
+
+def linear_regression(theta, phi):
+    return phi.T.dot(theta)
 
 def plot_ML(X, Y, M):
     theta = poly_theta(X, Y, M)
@@ -36,15 +39,10 @@ def theta_grad(X,Y,theta):
     return 2*X.transpose().dot(X.dot(theta) - Y)
 
 def SSE_deriv(X,Y,theta):
-    # print X.shape
-    # print theta.shape
-    X_new = poly_phi(X,theta.shape[0]-1) # because 0 1 2 3, shape 1 means order is zero
-    # print X_new.shape
-    new = Y - X_new.dot(theta)
-    SSE =  np.sum(np.power(new,2))
-    grad = theta_grad(X_new,Y,theta)
-
-    return SSE, grad
+    phi_new = poly_phi(X, theta.shape[0])
+    new = Y - phi_new.dot(theta)
+    SSE = np.sum(np.power(new,2))
+    return SSE
 
 def thetaLossFunction(X_1,Y,theta):
     return np.linalg.norm(X_1.dot(theta) - Y)
@@ -77,9 +75,12 @@ if __name__ == "__main__":
     Y = np.transpose(np.matrix(Y_raw))
     M = [0, 1, 3, 10]
 
-    print X.shape
-    theta = poly_theta(X, Y, 2)
-    print SSE_deriv(X, Y, theta)
+    for i in range(0, 10):
+        theta = poly_theta(X, Y, i)
+    # print theta.shape
+        print SSE_deriv(X, Y, theta)
+
+    #
     # for i in xrange(0, len(M)):
     #     plot_ML(X,Y,M[i])
     #     plt.plot(X, Y, 'o')
