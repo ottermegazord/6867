@@ -28,23 +28,27 @@ def training_plot():
     plt.plot(X, Y, '-o')
     plt.xlabel('x')
     plt.ylabel('y')
+    plt.show()
 
 if __name__ == "__main__":
     # Load Parameters
-    X_raw, Y_raw = loadFittingDataP2.getData()
-    X = np.transpose(np.matrix(X_raw))
-    Y = np.transpose(np.matrix(Y_raw))
-    M = [0, 1, 3, 10]
+    # X_raw, Y_raw = loadFittingDataP2.getData()
+    # X = np.transpose(np.matrix(X_raw))
+    # Y = np.transpose(np.matrix(Y_raw))
+    # M = [0, 1, 3, 10]
 
-    for i in xrange(0, len(M)):
-        plot_ML(X,Y,M[i])
-        plt.plot(X, Y, 'o')
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.show()
+    # for i in xrange(0, len(M)):
+    #     plot_ML(X,Y,M[i])
+    #     plt.plot(X, Y, 'o')
+    #     plt.xlabel('x')
+    #     plt.ylabel('y')
+    #     plt.show()
 
-    training_plot()
-    plt.show()
+    X_basis = np.matrix([np.linspace(0, 1, 10000)])
+    Y_real = np.cos(X_basis * np.pi) + 1.5 * np.cos(2 * np.pi * X_basis)
+    print Y_real
+    # plt.plot(X_basis, Y_real, '-', lw = 10)
+    # plt.show()
 
 
 
