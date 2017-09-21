@@ -4,16 +4,19 @@ import matplotlib.pyplot as plt
 import math
 
 
-def poly_phi(X, M): # returns phi Vandermonde
+def poly_phi(X, M, function='polynomial'): # returns phi Vandermonde
     X_hold = np.ones((X.shape[0], M)) #  make X.shape[0] (N) x M ones array (M+1 because 0, 1, 2... M)
     for i in xrange(1, M):
-        X_hold[:, [i]] = np.matrix(np.power(X, i))
-
+        if (function == 'polynomial'):
+            X_hold[:, [i]] = np.matrix(np.power(X, i))
+        elif (function == 'cosine'):
+            X_hold[:, [i]] = np.matrix(np.cos(math.pi*X*i))
     return X_hold
 
-def poly_theta(X, Y, M): # returns weight vector theta,
-    phi = poly_phi(X, M + 1)
+def poly_theta(X, Y, M, function='polynomial'): # returns weight vector theta,
+    phi = poly_phi(X, M + 1, function)
     weight = np.linalg.inv(np.transpose(phi).dot(phi)).dot(phi.transpose()).dot(Y)  # theta = (X^T X)^-1 X^T y
+    print weight
     return weight
 
 def linear_regression(theta, phi):
@@ -22,7 +25,7 @@ def linear_regression(theta, phi):
 def plot_ML(X, Y, M):
     theta = poly_theta(X, Y, M)
     X_basis = np.matrix([np.linspace(0, 1, 100)]).transpose() # generate basis for plots
-    X_plot = poly_phi(X_basis, M)
+    X_plot = poly_phi(X_basis, M + 1)
     Y_plot = X_plot.dot(theta)
     plt.plot(X_basis, Y_plot)
 
@@ -35,38 +38,19 @@ def training_plot():
     plt.xlabel('x')
     plt.ylabel('y')
 
-def theta_grad(X,Y,theta):
+def theta_agrad(X,Y,theta):
     return 2*X.transpose().dot(X.dot(theta) - Y)
 
 def SSE_deriv(X,Y,theta):
     phi_new = poly_phi(X, theta.shape[0])
     new = Y - phi_new.dot(theta)
     SSE = np.sum(np.power(new,2))
-    return SSE
+    grad = theta_gradient(phi_new, Y, theta)
+    norm_grad = np.linalg.norm(grad)
+    return SSE, grad, norm_grad
 
-def thetaLossFunction(X_1,Y,theta):
-    return np.linalg.norm(X_1.dot(theta) - Y)
-
-def batchGradientDescent(X,Y, M, step , conv ,theta =None):
-    if theta == None:
-        theta = np.zeros((M+1,1))
-    X_1 = poly_phi(X,M) #create vandermonde for X
-    diff = thetaLossFunction(X_1,Y,theta) #difference between current loss and previous loss
-    prev = thetaLossFunction(X_1,Y,theta) #value of previous loss
-    i = 0
-    while abs(diff) > conv: # and i < 10:
-        i += 1
-        temp = theta_grad(X_1,Y,theta)
-        print 'grad', temp
-        theta = theta - step*temp
-        diff = thetaLossFunction(X_1,Y,theta) - prev
-        prev = thetaLossFunction(X_1,Y,theta)
-        print "iteration", i
-        print "theta", theta
-        print "diff", diff," conv", conv
-
-    return theta
-
+def theta_gradient(X,Y,theta):
+    return 2 * X.transpose().dot(X.dot(theta) - Y)
 
 if __name__ == "__main__":
     # Load Parameters
@@ -74,11 +58,16 @@ if __name__ == "__main__":
     X = np.transpose(np.matrix(X_raw))
     Y = np.transpose(np.matrix(Y_raw))
     M = [0, 1, 3, 10]
+    step = 0.01
 
-    for i in range(0, 10):
-        theta = poly_theta(X, Y, i)
+    for i in range(0, len(M)):
+        theta = poly_theta(X, Y, i, function='cosine')
+        plot_ML(X, Y, M[i])
+        plt.show()
     # print theta.shape
-        print SSE_deriv(X, Y, theta)
+        #print SSE_deriv(X, Y, theta)
+
+    theta = poly_theta(X, Y, 10)
 
     #
     # for i in xrange(0, len(M)):
