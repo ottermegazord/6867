@@ -68,6 +68,10 @@ if __name__ == "__main__":
         #print SSE_deriv(X, Y, theta)
 
     theta = poly_theta(X, Y, 10)
+    SSE_deriv(X,Y,theta)
+
+
+
 
     #
     # for i in xrange(0, len(M)):

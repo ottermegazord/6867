@@ -36,19 +36,6 @@ def gradient_descent(f, f_params, \
 
 
 def negative_gaussian(params, x):
-    #
-    # Compute value of negative gaussian function f and its derivative d
-    # Return f, d
-    #
-    # params should be a np array containing:
-    # [mean, cov_matrix, multiplier]
-    #
-    # f(x) = (2x1)'*(2x2)*(2x1)
-    #      = (1x2)*(2x2)*(2x1)
-    #      = 1
-    # df(x)/dx = 1*(2x2)*(2x1)
-    #          = 2x1
-    #
 
     mean = params[0]
     cov_matrix = params[1]

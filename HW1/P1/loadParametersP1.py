@@ -172,8 +172,6 @@ if __name__ == '__main__':
     converged0 = convergenceObjectiveFunction(bowl, 1e-20, 2000)
     basicGradientDescent(bowlGrad, start_matrix, 0.001, converged0, data)
 
-    f.write((data[200]))
-
     bowl_exact = (26.666, 26.666)
 
     """Problem 2 Part 2"""
