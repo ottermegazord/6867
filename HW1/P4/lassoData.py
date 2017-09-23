@@ -53,6 +53,12 @@ def main():
     test_X, test_Y = lassoTestData()
     trueW = lassoTrueWData()
 
+    #essential steps
+    #1. download data
+    #2. convert data to phi
+    #3. find theta, which is the weight, derived from the regularizer formula
+    #4.
+
     trainphiX = phix(train_X[:,0])
     plottingX = np.linspace(-1,1,1000)
     plottingphiX = phix(plottingX)
