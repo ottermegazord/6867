@@ -1,25 +1,17 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Sep 24 14:08:31 2017
+
+@author: priyankadesouza
+"""
+
 import pylab as pl
 import numpy as np
 from math import *
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
-#def getData(ifPlotData=True):
-def getData():
-    # load the fitting data and (optionally) plot out for examination
-    # return the X and Y as a tuple
 
-    data = pl.loadtxt('curvefittingp2.txt')
-
-    X = data[0,:]
-    Y = data[1,:]
-
-#    if ifPlotData:
-#        plt.plot(X,Y,'o')
-#        plt.xlabel('x')
-#        plt.ylabel('y')
-#        plt.show()
-
-    return (X,Y)
 
 def Batchgradient(m,x,y,start_pos,convCriterion,alpha, max_iti, phi):
     iti=0
@@ -200,28 +192,25 @@ def validateData():
                
 if __name__ == '__main__':
     m=3
-#    x,y=getData()
-    n=x.shape[0]
-    w, phi=(maxlikelihood(y,m,x,n))
-    #print(w)
-    sOfSquares, sOfSquareGradient=cost(w, phi)
-    e,l=sOfSquares(y,m,x)
-    #print(e)
-    #print(l)
-    g=sOfSquareGradient(y,m,x)
-    
-    convCriterion=1e-20
-    alpha=1000000
-    max_iti=100000
-    start_pos=np.asarray([1,1,1])
-    batchsize=m
-    pos_bg=Batchgradient(m,x,y,start_pos,convCriterion,alpha, max_iti, phi)
-    pos_sg=StochasticGradient(batchsize,m,x,y,start_pos,convCriterion,alpha, max_iti, phi)
-    
-    w_cos,phi_cos=maxlikelihood_cos(y,m,x,n)
-    lam=2
-    w,phi=Ridge(y,m,x,n, lam)
-    print(w)
-    
+    #use regressA as training
+    x1,y1=regressAData()
+    x2,y2=regressBData()
+    n1=x1.shape[0]
 
+    w_ridge,phi_ridge=Ridge(y1,m,x1,n1, lam)
+    print(w_ridge)
+    xval,yval=validateData()
+    basis,c=getBasisFunctions(m)
+    phi_val=[[None]*m]*xval.shape[0]
+    
+    for i in range(0,xval.shape[0]):
+        phi_val[i]=basis(xval[i].item())
+        
+    phi_val=np.asmatrix(phi_val)
+    y_model =w_ridge.T*phi_val.T
+    y_m=np.asarray(y_model)
+    y_m=y_m.T
+    plt.plot(xval,yval, 'r')
+    plt.plot(xval, y_model, 'b')
+    plt.show()
     
