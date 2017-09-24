@@ -75,32 +75,75 @@ def main():
     ridge_theta = clf.coef_
     y_ridge = np.dot(ridge_theta[:], np.transpose(plottingphiX))
     plt.plot(plottingX, y_ridge[0,:], label = "Ridge")
+    clf = linear_model.Lasso(alpha=0.01)
+    clf.fit(trainphiX, train_Y)  #
+    lasso_theta = clf.coef_  # outputs lasso's weight parameter
+    y_lasso = np.dot(lasso_theta, np.transpose(plottingphiX))
+    plt.plot(plottingX, y_lasso, label='LASSO: 0.01')
+    plt.plot(plottingX, trueY, label="True")
+    plt.legend()
+    plt.title("Comparimg Lasso with Ridge Regression")
+    plt.show()
 
 
 
-    A = [0.001, 0.1, 0.5, 5.0, 10.0, 50.0, 100.0]
+    A = [0.0001, 0.001, 0.01, 0.1, 1, 10.0, 100.0]
     for i in range(0, len(A)):
         clf = linear_model.Lasso(alpha=A[i])
         clf.fit(trainphiX, train_Y) #
         lasso_theta = clf.coef_ # outputs lasso's weight parameter
         y_lasso = np.dot(lasso_theta, np.transpose(plottingphiX))
-        plt.plot(plottingX, y_lasso, label= 'Alpha: %.2f' %A[i])
-    plt.plot(plottingX, trueY,label = "True")
-    plt.legend()
-    plt.show()
+        plt.plot(plottingX, y_lasso, label= 'Lambda: %.2f' %A[i])
+        plt.plot(plottingX, trueY,label = "True")
+        plt.legend()
+        plt.title("LASSO with Lambda = %.2f" %A[i])
+        plt.show()
+        #plt.bar(plottingTrue, lasso_theta, label=)
+    #plt.legend()
+    #plt.show()
 
     plottingTrue = np.linspace(1, 13, 13)
     plt.title("W true")
     plt.bar(plottingTrue, trueW)
     plt.show()
 
-    clf = linear_model.Lasso(alpha=0.05)
+    clf = linear_model.Lasso(alpha=0.01)
     clf.fit(trainphiX, train_Y)  #
     lasso_theta = clf.coef_  # outputs lasso's weight parameter
     print lasso_theta
 
     plottingTrue = np.linspace(1, 13, 13)
-    plt.title("estimated w with LASSO Lambda = 0.05")
+    plt.title("estimated w with LASSO Lambda = 0.01")
+    plt.bar(plottingTrue, lasso_theta)
+    plt.show()
+
+    clf = linear_model.Lasso(alpha=0.1)
+    clf.fit(trainphiX, train_Y)  #
+    lasso_theta = clf.coef_  # outputs lasso's weight parameter
+    print lasso_theta
+
+    plottingTrue = np.linspace(1, 13, 13)
+    plt.title("estimated w with LASSO Lambda = 0.1")
+    plt.bar(plottingTrue, lasso_theta)
+    plt.show()
+
+    clf = linear_model.Lasso(alpha=1)
+    clf.fit(trainphiX, train_Y)  #
+    lasso_theta = clf.coef_  # outputs lasso's weight parameter
+    print lasso_theta
+
+    plottingTrue = np.linspace(1, 13, 13)
+    plt.title("estimated w with LASSO Lambda = 1")
+    plt.bar(plottingTrue, lasso_theta)
+    plt.show()
+
+    clf = linear_model.Lasso(alpha=10)
+    clf.fit(trainphiX, train_Y)  #
+    lasso_theta = clf.coef_  # outputs lasso's weight parameter
+    print lasso_theta
+
+    plottingTrue = np.linspace(1, 13, 13)
+    plt.title("estimated w with LASSO Lambda = 10")
     plt.bar(plottingTrue, lasso_theta)
     plt.show()
 
